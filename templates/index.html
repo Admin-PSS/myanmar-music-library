@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ဖြူနီဝါပြာ Music Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0f0d2e;
+    --bg2:      #1a1740;
+    --bg3:      #252250;
+    --border:   #2e2a6a;
+    --accent:   #7c3aed;
+    --accent2:  #a78bfa;
+    --accent3:  #ede9fe;
+    --fg:       #e0e7ff;
+    --fg2:      #9ca3af;
+    --fg3:      #6b7280;
+    --green:    #34d399;
+    --yellow:   #fbbf24;
+    --pink:     #f472b6;
+    --blue:     #60a5fa;
+    --panel-w:  240px;
+    --detail-w: 340px;
+  }
+
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    font-family: 'Inter', 'Padauk', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ─────────────────────────────────────────────── */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .logo-text { font-size: 15px; font-weight: 700; color: var(--fg); font-family: 'Padauk', sans-serif; }
+  .logo-sub  { font-size: 11px; color: var(--accent2); }
+
+  .search-wrap {
+    flex: 1;
+    max-width: 480px;
+    position: relative;
+  }
+  .search-wrap svg {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--fg3); pointer-events: none;
+  }
+  #global-search {
+    width: 100%;
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px 7px 34px;
+    color: var(--fg);
+    font-size: 13px;
+    font-family: 'Padauk', 'Inter', sans-serif;
+    outline: none;
+    transition: border-color .15s;
+  }
+  #global-search:focus { border-color: var(--accent); }
+  #global-search::placeholder { color: var(--fg3); }
+
+  #result-count {
+    font-size: 12px; color: var(--fg2); flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  /* ── Main layout ─────────────────────────────────────────── */
+  .layout {
+    display: grid;
+    grid-template-columns: var(--panel-w) 1fr var(--detail-w);
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Left panel (Artists) ────────────────────────────────── */
+  .artist-panel {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-label {
+    padding: 10px 14px 6px;
+    font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    color: var(--fg3); text-transform: uppercase;
+    flex-shrink: 0;
+    font-family: 'Inter', sans-serif;
+  }
+
+  #artist-search {
+    margin: 4px 10px 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--fg);
+    font-size: 12px;
+    font-family: 'Padauk', 'Inter', sans-serif;
+    outline: none;
+    width: calc(100% - 20px);
+    flex-shrink: 0;
+    display: block;
+  }
+  #artist-search::placeholder { color: var(--fg3); }
+
+  #artist-list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 4px 0;
+  }
+  .artist-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Padauk', sans-serif;
+    color: var(--fg2);
+    transition: background .12s, color .12s;
+  }
+  .artist-item:hover { background: var(--bg3); color: var(--fg); }
+  .artist-item.active { background: var(--accent); color: #fff; }
+  .artist-item .artist-count {
+    font-size: 10px;
+    background: rgba(255,255,255,.12);
+    border-radius: 99px;
+    padding: 1px 6px;
+    flex-shrink: 0;
+  }
+  .artist-item.active .artist-count { background: rgba(255,255,255,.25); }
+  .all-artists { font-weight: 600; }
+
+  /* ── Albums panel ────────────────────────────────────────── */
+  .albums-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .albums-toolbar {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+  .type-btn {
+    padding: 4px 12px;
+    border-radius: 99px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--fg2);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Padauk', 'Inter', sans-serif;
+    transition: all .12s;
+  }
+  .type-btn:hover { border-color: var(--accent2); color: var(--fg); }
+  .type-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  #albums-grid {
+    overflow-y: auto;
+    flex: 1;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 12px;
+    align-content: start;
+  }
+
+  .album-card {
+    background: var(--bg2);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all .15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .album-card:hover { border-color: var(--accent2); transform: translateY(-1px); }
+  .album-card.active { border-color: var(--accent); background: #1e1b4b; }
+
+  .album-cover {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    border-radius: 7px;
+    display: block;
+    background: var(--bg3);
+    margin-bottom: 9px;
+  }
+  .album-cover-placeholder {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 7px;
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 9px;
+  }
+  .no-audio-badge {
+    position: absolute; top: 20px; right: 20px;
+    background: #374151; color: #fff;
+    font-size: 9px; font-weight: 700;
+    padding: 2px 5px; border-radius: 4px;
+  }
+  .type-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 99px;
+    margin-bottom: 5px;
+  }
+  .type-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .album-title {
+    font-size: 12px; font-weight: 700;
+    color: var(--fg);
+    line-height: 1.35;
+    font-family: 'Padauk', sans-serif;
+    margin-bottom: 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .album-card.active .album-title { color: #e0e7ff; }
+  .album-artist {
+    font-size: 11px; color: var(--accent2); font-weight: 600;
+    font-family: 'Padauk', sans-serif;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .album-year { font-size: 10px; color: var(--fg3); margin-top: 1px; }
+
+  .empty-state {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--fg3);
+    font-size: 14px;
+  }
+
+  /* ── Detail panel ────────────────────────────────────────── */
+  .detail-panel {
+    background: var(--bg2);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .detail-scroll { overflow-y: auto; flex: 1; padding: 16px; }
+
+  .detail-header { display: flex; gap: 14px; margin-bottom: 14px; }
+  .detail-cover {
+    width: 88px; height: 88px;
+    object-fit: cover; border-radius: 10px; flex-shrink: 0;
+    box-shadow: 0 4px 20px rgba(124,58,237,.3);
+    background: var(--bg3);
+  }
+  .detail-cover-placeholder {
+    width: 88px; height: 88px;
+    border-radius: 10px; flex-shrink: 0;
+    background: var(--bg3);
+    display: flex; align-items: center; justify-content: center; font-size: 32px;
+  }
+  .detail-meta { flex: 1; min-width: 0; }
+  .detail-title {
+    font-size: 15px; font-weight: 800; color: var(--fg);
+    line-height: 1.3; font-family: 'Padauk', sans-serif;
+    margin: 5px 0 3px;
+  }
+  .detail-artist { font-size: 13px; color: var(--accent2); font-weight: 700; font-family: 'Padauk', sans-serif; }
+  .detail-year   { font-size: 11px; color: var(--fg3); margin-top: 2px; }
+  .detail-label  { font-size: 11px; color: var(--fg2); margin-top: 3px; font-family: 'Padauk', sans-serif; }
+
+  .info-chip {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 11px;
+    font-size: 11px; color: var(--accent2); font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    color: var(--fg3); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .dl-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 13px; border-radius: 8px;
+    text-decoration: none; font-size: 12px; font-weight: 600;
+    margin-bottom: 6px; transition: opacity .12s;
+  }
+  .dl-btn:hover { opacity: .85; }
+  .dl-pcloud   { background: var(--accent); color: #fff; }
+  .dl-mf       { background: #1d4ed8; color: #fff; }
+  .dl-blog     { background: var(--bg3); color: var(--fg2); border: 1px solid var(--border); }
+
+  .tracklist { margin-top: 14px; }
+  .track-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 6px 8px; border-radius: 6px;
+    font-family: 'Padauk', sans-serif; font-size: 12px;
+  }
+  .track-item:nth-child(odd) { background: var(--bg3); }
+  .track-num {
+    font-size: 10px; color: var(--accent2); font-weight: 700;
+    min-width: 20px; text-align: right; margin-top: 1px;
+    flex-shrink: 0;
+  }
+  .track-name { color: var(--fg); line-height: 1.4; }
+
+  /* ── Track search inside detail ──────────────────────────── */
+  #track-search {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--fg);
+    font-size: 12px;
+    font-family: 'Padauk', 'Inter', sans-serif;
+    outline: none;
+    margin-bottom: 8px;
+  }
+  #track-search::placeholder { color: var(--fg3); }
+  .track-item.highlight { background: #2d1f6e; }
+  .track-item.hidden { display: none; }
+
+  .placeholder-detail {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--fg3); font-size: 13px; gap: 8px; padding: 40px;
+    text-align: center;
+  }
+  .placeholder-detail .big { font-size: 40px; }
+
+  /* ── Scrollbars ──────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* ── Loading ─────────────────────────────────────────────── */
+  #loading {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; z-index: 99;
+    transition: opacity .3s;
+  }
+  #loading .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div style="color:var(--fg2);font-size:13px">Loading albums…</div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎵</div>
+    <div>
+      <div class="logo-text">ဖြူနီဝါပြာ Music Library</div>
+      <div class="logo-sub">မြန်မာ့ရှေးဟောင်း တေးသံသာများ</div>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="global-search" type="text" placeholder="Search artist, album, or any song name…" autocomplete="off">
+  </div>
+
+  <span id="result-count"></span>
+</header>
+
+<!-- Layout -->
+<div class="layout">
+
+  <!-- Left panel -->
+  <div class="artist-panel">
+    <div class="panel-label">Artists</div>
+    <input id="artist-search" type="text" placeholder="Filter artists…" autocomplete="off">
+    <div id="artist-list"></div>
+  </div>
+
+  <!-- Albums panel -->
+  <div class="albums-panel">
+    <div class="albums-toolbar" id="type-filters"></div>
+    <div id="albums-grid"></div>
+  </div>
+
+  <!-- Detail panel -->
+  <div class="detail-panel" id="detail-panel">
+    <div class="placeholder-detail">
+      <div class="big">🎵</div>
+      <div>Select an album to see details and tracklist</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Type colours ─────────────────────────────────────────────────────────────
+const TYPE_STYLES = {
+  "ဓါတ်ပြားတေး":    { bg:"#fef3c7", text:"#92400e", dot:"#f59e0b" },
+  "တိတ်ခွေ":         { bg:"#dbeafe", text:"#1e40af", dot:"#3b82f6" },
+  "ကက်ဆက်ဇာတ်လမ်း": { bg:"#fce7f3", text:"#9d174d", dot:"#ec4899" },
+};
+const DEFAULT_STYLE = { bg:"#f3f4f6", text:"#374151", dot:"#6b7280" };
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let allAlbums = [];
+let selArtist = "All";
+let selType   = "All";
+let selAlbum  = null;
+let globalQ   = "";
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+fetch("/api/albums")
+  .then(r => r.json())
+  .then(data => {
+    allAlbums = data;
+    document.getElementById("loading").style.opacity = "0";
+    setTimeout(() => document.getElementById("loading").style.display = "none", 300);
+    buildArtistList();
+    buildTypeFilters();
+    renderAlbums();
+  })
+  .catch(() => {
+    document.getElementById("loading").innerHTML =
+      '<div style="color:#f87171;font-size:14px">⚠ Could not load albums.json<br><small style="color:#6b7280">Run the scraper first</small></div>';
+  });
+
+// ── Artist list ───────────────────────────────────────────────────────────────
+function buildArtistList() {
+  const counts = {};
+  allAlbums.forEach(a => {
+    const key = a.artist || "Unknown";
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  const sorted = Object.entries(counts).sort((a,b) => a[0].localeCompare(b[0]));
+  renderArtistList(sorted, "");
+}
+
+function renderArtistList(entries, filter) {
+  const list = document.getElementById("artist-list");
+  const total = allAlbums.length;
+  let html = `<div class="artist-item all-artists ${selArtist==="All"?"active":""}" data-artist="All">
+    All Artists <span class="artist-count">${total}</span>
+  </div>`;
+  entries.forEach(([name, count]) => {
+    if (filter && !name.toLowerCase().includes(filter) && !name.includes(filter)) return;
+    html += `<div class="artist-item ${selArtist===name?"active":""}" data-artist="${escHtml(name)}">
+      <span style="font-family:'Padauk',sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(name)}</span>
+      <span class="artist-count">${count}</span>
+    </div>`;
+  });
+  list.innerHTML = html;
+  list.querySelectorAll(".artist-item").forEach(el => {
+    el.addEventListener("click", () => {
+      selArtist = el.dataset.artist;
+      selType   = "All";
+      globalQ   = "";
+      document.getElementById("global-search").value = "";
+      buildArtistList();
+      renderArtistList(
+        Object.entries((() => {
+          const c={};
+          allAlbums.forEach(a=>{const k=a.artist||"Unknown";c[k]=(c[k]||0)+1;});
+          return c;
+        })()).sort((a,b)=>a[0].localeCompare(b[0])),
+        document.getElementById("artist-search").value.toLowerCase()
+      );
+      buildTypeFilters();
+      renderAlbums();
+    });
+  });
+}
+
+document.getElementById("artist-search").addEventListener("input", function() {
+  const f = this.value.toLowerCase();
+  const counts = {};
+  allAlbums.forEach(a=>{const k=a.artist||"Unknown";counts[k]=(counts[k]||0)+1;});
+  const sorted = Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0]));
+  renderArtistList(sorted, f);
+});
+
+// ── Type filters ──────────────────────────────────────────────────────────────
+function buildTypeFilters() {
+  const base = selArtist === "All" ? allAlbums : allAlbums.filter(a=>(a.artist||"Unknown")===selArtist);
+  const types = ["All", ...new Set(base.map(a=>a.type).filter(Boolean))];
+  const bar = document.getElementById("type-filters");
+  bar.innerHTML = types.map(t =>
+    `<button class="type-btn ${selType===t?"active":""}" data-type="${escHtml(t)}">${escHtml(t)}</button>`
+  ).join("");
+  bar.querySelectorAll(".type-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selType = btn.dataset.type;
+      buildTypeFilters();
+      renderAlbums();
+    });
+  });
+}
+
+// ── Albums grid ───────────────────────────────────────────────────────────────
+function filteredAlbums() {
+  const q = globalQ.toLowerCase();
+  return allAlbums.filter(a => {
+    if (selArtist !== "All" && (a.artist||"Unknown") !== selArtist) return false;
+    if (selType   !== "All" && a.type !== selType) return false;
+    if (!q) return true;
+    return (a.artist||"").includes(q)
+        || (a.title||"").includes(q)
+        || (a.tracklist||[]).some(t => t.toLowerCase().includes(q));
+  });
+}
+
+function renderAlbums() {
+  const list = filteredAlbums();
+  const grid = document.getElementById("albums-grid");
+  document.getElementById("result-count").textContent =
+    `${list.length} album${list.length!==1?"s":""}`;
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state">No albums match your search.</div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(a => {
+    const s = TYPE_STYLES[a.type] || DEFAULT_STYLE;
+    const isActive = selAlbum && selAlbum.id === a.id;
+    const coverEl = a.coverUrl
+      ? `<img class="album-cover" src="${escHtml(a.coverUrl)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        + `<div class="album-cover-placeholder" style="display:none">🎵</div>`
+      : `<div class="album-cover-placeholder">🎵</div>`;
+    return `<div class="album-card ${isActive?"active":""}" data-id="${a.id}">
+      ${coverEl}
+      ${!a.pcloudUrl && !a.mediafire ? '<span class="no-audio-badge">NO AUDIO</span>' : ""}
+      <span class="type-badge" style="background:${s.bg};color:${s.text}">
+        <span class="type-dot" style="background:${s.dot}"></span>
+        ${escHtml(a.type||"")}
+      </span>
+      <div class="album-title">${escHtml(a.title||"")}</div>
+      <div class="album-artist">${escHtml(a.artist||"")}</div>
+      ${a.year ? `<div class="album-year">${escHtml(a.year)}</div>` : ""}
+    </div>`;
+  }).join("");
+
+  grid.querySelectorAll(".album-card").forEach(card => {
+    card.addEventListener("click", () => {
+      selAlbum = allAlbums.find(a => a.id === parseInt(card.dataset.id)) || null;
+      renderAlbums();
+      renderDetail();
+    });
+  });
+}
+
+// ── Detail panel ──────────────────────────────────────────────────────────────
+function renderDetail() {
+  const panel = document.getElementById("detail-panel");
+  if (!selAlbum) {
+    panel.innerHTML = `<div class="placeholder-detail"><div class="big">🎵</div><div>Select an album to see details and tracklist</div></div>`;
+    return;
+  }
+  const a = selAlbum;
+  const s = TYPE_STYLES[a.type] || DEFAULT_STYLE;
+  const hasAudio = a.pcloudUrl || a.mediafire;
+  const coverEl = a.coverUrl
+    ? `<img class="detail-cover" src="${escHtml(a.coverUrl)}" alt="" onerror="this.style.display='none'">`
+    : `<div class="detail-cover-placeholder">🎵</div>`;
+
+  panel.innerHTML = `<div class="detail-scroll">
+    <div class="detail-header">
+      ${coverEl}
+      <div class="detail-meta">
+        <span class="type-badge" style="background:${s.bg};color:${s.text}">
+          <span class="type-dot" style="background:${s.dot}"></span>${escHtml(a.type||"")}
+        </span>
+        <div class="detail-title">${escHtml(a.title||"")}</div>
+        <div class="detail-artist">${escHtml(a.artist||"")}</div>
+        ${a.year        ? `<div class="detail-year">${escHtml(a.year)}</div>` : ""}
+        ${a.recordLabel ? `<div class="detail-label">${escHtml(a.recordLabel)}</div>` : ""}
+      </div>
+    </div>
+
+    ${a.format ? `<div class="info-chip">📁 ${escHtml(a.format)}</div>` : ""}
+
+    <div class="section-label">Download</div>
+    ${a.pcloudUrl ? `<a class="dl-btn dl-pcloud" href="${escHtml(a.pcloudUrl)}" target="_blank" rel="noopener">☁️ pCloud Download</a>` : ""}
+    ${a.mediafire ? `<a class="dl-btn dl-mf"     href="${escHtml(a.mediafire)}" target="_blank" rel="noopener">🔵 MediaFire Download</a>` : ""}
+    ${a.blogUrl   ? `<a class="dl-btn dl-blog"   href="${escHtml(a.blogUrl)}"   target="_blank" rel="noopener">🔗 Blog Post</a>` : ""}
+    ${!hasAudio   ? `<div style="font-size:12px;color:var(--fg3);margin-bottom:12px">Audio not available — cover only.</div>` : ""}
+
+    <div class="tracklist">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div class="section-label" style="margin:0">Tracklist — ${(a.tracklist||[]).length} tracks</div>
+      </div>
+      ${(a.tracklist||[]).length > 5 ? `<input id="track-search" type="text" placeholder="Filter tracks…" autocomplete="off">` : ""}
+      <div id="track-list">
+        ${(a.tracklist||[]).map((t,i) => `
+          <div class="track-item" data-track="${escHtml(t.toLowerCase())}">
+            <span class="track-num">${String(i+1).padStart(2,"0")}</span>
+            <span class="track-name">${escHtml(t)}</span>
+          </div>`).join("")}
+      </div>
+    </div>
+  </div>`;
+
+  const trackSearch = document.getElementById("track-search");
+  if (trackSearch) {
+    trackSearch.addEventListener("input", function() {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll(".track-item").forEach(el => {
+        const match = !q || el.dataset.track.includes(q);
+        el.classList.toggle("hidden", !match);
+        el.classList.toggle("highlight", !!q && match);
+      });
+    });
+  }
+}
+
+// ── Global search ─────────────────────────────────────────────────────────────
+document.getElementById("global-search").addEventListener("input", function() {
+  globalQ   = this.value;
+  selArtist = "All";
+  selType   = "All";
+  buildArtistList();
+  buildTypeFilters();
+  renderAlbums();
+});
+
+// ── Util ──────────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+</script>
+</body>
+</html>

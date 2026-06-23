@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+*.pyo
+albums.xlsx
+templates/index_with_tracks.html
