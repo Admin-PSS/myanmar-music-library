@@ -4,7 +4,7 @@ A browser for **6,800+ classical Burmese music albums** scraped from [phyuniwarp
 
 **[▶ Open Live Demo](https://admin-pss.github.io/myanmar-music-library/)**
 
-![screenshot](https://i.imgur.com/placeholder.png)
+![screenshot](screenshot.png)
 
 ## Features
 
