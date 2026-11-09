@@ -392,6 +392,62 @@
     animation: spin .7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Listen (MediaFire streaming) ────────────────────────── */
+  .listen { margin-top: 14px; }
+  .listen-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px; }
+  .listen-head .section-label { margin: 0; }
+  .play-all {
+    background: var(--accent); color: #fff; border: 0; border-radius: 99px;
+    padding: 4px 11px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .play-all:hover { opacity: .85; }
+  .mf-status { font-size: 11px; color: var(--fg3); padding: 6px 2px; }
+  .mf-status.err { color: #f87171; }
+  .mf-folder { font-size: 10px; color: var(--fg3); margin: 8px 2px 4px; font-family: 'Padauk', sans-serif; }
+  .mf-track {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 6px; border-radius: 6px;
+    font-family: 'Padauk', sans-serif; font-size: 12px;
+  }
+  .mf-track:nth-child(odd) { background: var(--bg3); }
+  .mf-track.playing { background: #2d1f6e; }
+  .mf-track.bad .mf-name { color: #f87171; }
+  .mf-play {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    border: 0; background: var(--accent); color: #fff; font-size: 10px; cursor: pointer;
+  }
+  .mf-play:disabled { background: var(--border); cursor: default; }
+  .mf-name { flex: 1; min-width: 0; color: var(--fg); line-height: 1.4; overflow-wrap: anywhere; }
+  .mf-size { font-size: 10px; color: var(--fg3); white-space: nowrap; font-family: 'Inter', sans-serif; }
+  .mf-dl { color: var(--fg3); text-decoration: none; font-size: 13px; }
+  .mf-dl:hover { color: var(--accent2); }
+
+  /* ── Player bar ──────────────────────────────────────────── */
+  #player {
+    display: none; flex-shrink: 0;
+    background: var(--bg2); border-top: 1px solid var(--border);
+    padding: 8px 16px; gap: 12px; align-items: center;
+  }
+  #player.show { display: flex; }
+  #player img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; background: var(--bg3); flex-shrink: 0; }
+  .pl-info { min-width: 0; width: 220px; flex-shrink: 0; }
+  .pl-title { font-size: 13px; font-weight: 700; font-family: 'Padauk', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pl-artist { font-size: 11px; color: var(--accent2); font-family: 'Padauk', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pl-btn { background: transparent; border: 0; color: var(--fg); font-size: 16px; cursor: pointer; padding: 4px 6px; }
+  .pl-btn:hover { color: var(--accent2); }
+  #pl-toggle { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 13px; }
+  #pl-toggle:hover { color: #fff; opacity: .85; }
+  .pl-seek { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .pl-seek input { flex: 1; accent-color: var(--accent); min-width: 0; }
+  .pl-time { font-size: 11px; color: var(--fg3); font-variant-numeric: tabular-nums; min-width: 38px; text-align: center; }
+  #pl-speed { background: var(--bg3); color: var(--fg); border: 1px solid var(--border); border-radius: 6px; padding: 3px; font-size: 11px; }
+  #pl-msg { font-size: 11px; color: var(--fg3); max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #pl-msg.err { color: #f87171; }
+  @media (max-width: 900px) {
+    .pl-info { width: 120px; }
+    #pl-speed, #pl-msg { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -438,6 +494,27 @@
     </div>
   </div>
 
+</div>
+
+<div id="player">
+  <img id="pl-cover" alt="">
+  <div class="pl-info">
+    <div class="pl-title" id="pl-title"></div>
+    <div class="pl-artist" id="pl-artist"></div>
+  </div>
+  <button class="pl-btn" id="pl-prev" title="Previous">⏮</button>
+  <button class="pl-btn" id="pl-toggle" title="Play / Pause">▶</button>
+  <button class="pl-btn" id="pl-next" title="Next">⏭</button>
+  <div class="pl-seek">
+    <span class="pl-time" id="pl-cur">0:00</span>
+    <input type="range" id="pl-seek" min="0" max="0" step="1" value="0">
+    <span class="pl-time" id="pl-dur">--:--</span>
+  </div>
+  <select id="pl-speed" title="Speed">
+    <option value="0.75">0.75×</option><option value="1" selected>1×</option>
+    <option value="1.25">1.25×</option><option value="1.5">1.5×</option>
+  </select>
+  <span id="pl-msg"></span>
 </div>
 
 <script>
@@ -577,6 +654,13 @@ function renderDetail() {
     ${a.mediafire ? `<a class="dl-btn dl-mf"     href="${escHtml(a.mediafire)}" target="_blank" rel="noopener">🔵 MediaFire Download</a>` : ""}
     ${a.blogUrl   ? `<a class="dl-btn dl-blog"   href="${escHtml(a.blogUrl)}"   target="_blank" rel="noopener">🔗 Blog Post</a>` : ""}
     ${!a.pcloudUrl && !a.mediafire ? `<div style="font-size:12px;color:var(--fg3);margin-bottom:12px">Audio not available — cover only.</div>` : ""}
+    ${a.mediafire ? `<div class="listen">
+      <div class="listen-head">
+        <div class="section-label">🎧 Listen</div>
+        <button class="play-all" id="play-all" style="display:none">▶ Play all</button>
+      </div>
+      <div id="mf-tracks"><div class="mf-status">⏳ MediaFire မှ သီချင်းစာရင်း ရယူနေသည်…</div></div>
+    </div>` : ""}
     <div class="tracklist">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
         <div class="section-label" style="margin:0">Tracklist — ${(a.tracklist||[]).length} tracks</div>
@@ -598,7 +682,215 @@ function renderDetail() {
       el.classList.toggle("highlight", !!q && m);
     });
   });
+  if (a.mediafire) loadListen(a);
 }
+
+/* ═══ MediaFire streaming ═══════════════════════════════════════════
+   Folder/file keys → MediaFire public API (CORS: *) → each file's
+   links.normal_download (/file_premium/…) → <audio> follows the redirect
+   to downloadNNNN.mediafire.com and streams it.                        */
+const MF_API = "https://www.mediafire.com/api/1.5";
+const AUDIO_EXT = /\.(mp3|m4a|aac|ogg|oga|opus|wav|flac|wma)$/i;
+const mfCache = new Map();          // album id → Promise<groups>
+
+function mfParse(url) {
+  let m = url.match(/mediafire\.com\/folder\/([a-z0-9]+)/i);                          if (m) return {type:"folder", key:m[1]};
+  m = url.match(/mediafire\.com\/(?:file|file_premium|download|view)\/([a-z0-9]+)/i);  if (m) return {type:"file",   key:m[1]};
+  m = url.match(/mediafire\.com\/\?([a-z0-9]+)/i);                                    if (m) return {type:"file",   key:m[1]};
+  m = url.match(/mediafire\.com\/#([a-z0-9]+)/i);                                     if (m) return {type:"folder", key:m[1]};
+  return null;
+}
+
+async function mfApi(path, params) {
+  const qs = new URLSearchParams({...params, response_format:"json"});
+  const r = await fetch(`${MF_API}/${path}?${qs}`);
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const j = await r.json();
+  if (j.response?.result !== "Success") throw new Error(j.response?.message || "MediaFire API error");
+  return j.response;
+}
+
+async function mfListAll(key, type) {
+  const out = [];
+  for (let chunk = 1; chunk <= 20; chunk++) {
+    const r = await mfApi("folder/get_content.php", {folder_key:key, content_type:type, chunk, chunk_size:100});
+    out.push(...(r.folder_content?.[type] || []));
+    if (r.folder_content?.more_chunks !== "yes") break;
+  }
+  return out;
+}
+
+async function mfFolder(key, name = "", depth = 0) {
+  const files = await mfListAll(key, "files");
+  const groups = [{name, files}];
+  if (depth < 2) {
+    for (const sub of await mfListAll(key, "folders"))
+      groups.push(...await mfFolder(sub.folderkey, sub.name, depth + 1));
+  }
+  return groups;
+}
+
+function mfLoad(album) {
+  if (!mfCache.has(album.id)) {
+    const p = (async () => {
+      const ref = mfParse(album.mediafire);
+      if (!ref) throw new Error("Unsupported MediaFire link");
+      let groups;
+      if (ref.type === "folder") groups = await mfFolder(ref.key);
+      else groups = [{name:"", files:[(await mfApi("file/get_info.php", {quick_key:ref.key})).file_info]}];
+      const archives = groups.flatMap(g => g.files).filter(f => f && /\.(rar|zip|7z)$/i.test(f.filename)).length;
+      const result = groups.map(g => ({
+        name: g.name,
+        tracks: g.files
+          .filter(f => f && (AUDIO_EXT.test(f.filename) || (f.mimetype || "").startsWith("audio/")))
+          .sort((x, y) => x.filename.localeCompare(y.filename, undefined, {numeric:true}))
+          .map(f => ({name: f.filename.replace(AUDIO_EXT, ""), size: +f.size || 0, url: f.links?.normal_download || null}))
+      })).filter(g => g.tracks.length);
+      result.archives = archives;
+      return result;
+    })();
+    p.catch(() => mfCache.delete(album.id));   // allow retry after an error
+    mfCache.set(album.id, p);
+  }
+  return mfCache.get(album.id);
+}
+
+async function loadListen(album) {
+  const box = document.getElementById("mf-tracks");
+  let groups;
+  try { groups = await mfLoad(album); }
+  catch (e) {
+    if (selAlbum !== album) return;
+    box.innerHTML = `<div class="mf-status err">⚠ MediaFire မှ ရယူ၍မရပါ (${escHtml(e.message)}) — အပေါ်က Download ခလုတ်ကို သုံးပါ။</div>`;
+    return;
+  }
+  if (selAlbum !== album) return;     // user moved to another album meanwhile
+  const flat = groups.flatMap(g => g.tracks);
+  if (!flat.length) {
+    box.innerHTML = groups.archives
+      ? `<div class="mf-status">📦 ဤ album ကို RAR/ZIP ဖိုင်အဖြစ်သာ တင်ထားသဖြင့် တိုက်ရိုက်နားဆင်၍မရပါ — Download ခလုတ်ကို သုံးပါ။</div>`
+      : `<div class="mf-status">နားဆင်နိုင်သော audio file မတွေ့ပါ — Download ခလုတ်ကို သုံးပါ။</div>`;
+    return;
+  }
+  let i = 0;
+  box.innerHTML = groups.map(g => `
+    ${groups.length > 1 && g.name ? `<div class="mf-folder">📁 ${escHtml(g.name)}</div>` : ""}
+    ${g.tracks.map(t => { const idx = i++; return `
+      <div class="mf-track" data-idx="${idx}">
+        <button class="mf-play" ${t.url ? "" : "disabled"} title="Play">▶</button>
+        <span class="mf-name">${escHtml(t.name)}</span>
+        <span class="mf-size">${(t.size / 1048576).toFixed(1)} MB</span>
+        ${t.url ? `<a class="mf-dl" href="${escHtml(t.url)}" target="_blank" rel="noopener" title="Download">⬇</a>` : ""}
+      </div>`; }).join("")}`).join("");
+  box.querySelectorAll(".mf-track").forEach(row => {
+    row.querySelector(".mf-play").onclick = () => {
+      const idx = +row.dataset.idx;
+      if (player.album === album && player.idx === idx) togglePlay();
+      else playQueue(album, flat, idx);
+    };
+  });
+  const pa = document.getElementById("play-all");
+  pa.style.display = "";
+  pa.onclick = () => playQueue(album, flat, 0);
+  markPlaying();
+}
+
+/* ── Player ─────────────────────────────────────────────────────── */
+const audio  = new Audio();
+audio.preload = "none";
+const player = { album: null, queue: [], idx: -1 };
+const $p = id => document.getElementById(id);
+const fmtTime = s => {
+  if (!isFinite(s)) return "--:--";
+  s = Math.floor(s);
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+  return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(sec).padStart(2, "0");
+};
+const plMsg = (t, err = false) => { const el = $p("pl-msg"); el.textContent = t; el.className = err ? "err" : ""; };
+
+function playQueue(album, queue, idx) {
+  player.album = album; player.queue = queue;
+  playIdx(idx);
+}
+
+function playIdx(idx) {
+  const q = player.queue;
+  // skip tracks without a link
+  while (idx < q.length && !q[idx].url) idx++;
+  if (idx < 0 || idx >= q.length) return;
+  player.idx = idx;
+  const t = q[idx], a = player.album;
+  $p("player").classList.add("show");
+  $p("pl-title").textContent  = t.name;
+  $p("pl-artist").textContent = `${a.artist || ""} — ${a.title || ""}`;
+  const cov = $p("pl-cover");
+  if (a.coverUrl) { cov.src = a.coverUrl; cov.style.visibility = ""; } else cov.style.visibility = "hidden";
+  $p("pl-seek").max = 0; $p("pl-seek").value = 0;
+  $p("pl-cur").textContent = "0:00"; $p("pl-dur").textContent = "--:--";
+  plMsg("⏳ Loading…");
+  audio.src = t.url;
+  audio.playbackRate = parseFloat($p("pl-speed").value);
+  audio.play().catch(e => { if (e.name !== "AbortError") plMsg("Play failed: " + e.message, true); });
+  markPlaying();
+  if ("mediaSession" in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: t.name, artist: a.artist || "", album: a.title || "",
+      artwork: a.coverUrl ? [{src: a.coverUrl}] : []
+    });
+  }
+}
+
+function togglePlay() {
+  if (player.idx < 0) return;
+  audio.paused ? audio.play().catch(() => {}) : audio.pause();
+}
+
+function markPlaying() {
+  document.querySelectorAll(".mf-track").forEach(row => {
+    const on = player.album === selAlbum && +row.dataset.idx === player.idx;
+    row.classList.toggle("playing", on);
+    row.querySelector(".mf-play").textContent = on && !audio.paused ? "⏸" : "▶";
+  });
+  $p("pl-toggle").textContent = audio.paused ? "▶" : "⏸";
+}
+
+audio.addEventListener("playing", () => { plMsg(""); markPlaying(); });
+audio.addEventListener("pause",   markPlaying);
+audio.addEventListener("waiting", () => plMsg("Buffering…"));
+audio.addEventListener("loadedmetadata", () => {
+  $p("pl-seek").max = Math.floor(audio.duration) || 0;
+  $p("pl-dur").textContent = fmtTime(audio.duration);
+});
+let seeking = false;
+audio.addEventListener("timeupdate", () => {
+  if (!seeking) $p("pl-seek").value = Math.floor(audio.currentTime);
+  $p("pl-cur").textContent = fmtTime(audio.currentTime);
+});
+audio.addEventListener("ended", () => playIdx(player.idx + 1));
+audio.addEventListener("error", () => {
+  if (!audio.src || player.idx < 0) return;
+  const codes = {1:"Aborted", 2:"Network error", 3:"Decode error", 4:"File blocked or unavailable"};
+  plMsg("⚠ " + (codes[audio.error?.code] || "Playback error"), true);
+  document.querySelector(`.mf-track[data-idx="${player.idx}"]`)?.classList.add("bad");
+});
+$p("pl-seek").addEventListener("input",  e => { seeking = true; $p("pl-cur").textContent = fmtTime(e.target.value); });
+$p("pl-seek").addEventListener("change", e => { audio.currentTime = +e.target.value; seeking = false; });
+$p("pl-toggle").onclick = togglePlay;
+$p("pl-prev").onclick = () => audio.currentTime > 5 ? (audio.currentTime = 0) : playIdx(Math.max(0, player.idx - 1));
+$p("pl-next").onclick = () => playIdx(player.idx + 1);
+$p("pl-speed").onchange = e => audio.playbackRate = parseFloat(e.target.value);
+
+if ("mediaSession" in navigator) {
+  navigator.mediaSession.setActionHandler("play",  () => audio.play());
+  navigator.mediaSession.setActionHandler("pause", () => audio.pause());
+  navigator.mediaSession.setActionHandler("previoustrack", () => playIdx(Math.max(0, player.idx - 1)));
+  navigator.mediaSession.setActionHandler("nexttrack",     () => playIdx(player.idx + 1));
+}
+
+document.addEventListener("keydown", e => {
+  if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
+  if (e.code === "Space" && player.idx >= 0) { e.preventDefault(); togglePlay(); }
+});
 
 document.getElementById("global-search").addEventListener("input", function() {
   globalQ = this.value; selArtist = "All"; selType = "All";
