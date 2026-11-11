@@ -2,7 +2,8 @@
 <html lang="my">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a1740">
 <title>ဖြူနီဝါပြာ Music Library</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -196,6 +197,7 @@
     padding: 14px 16px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    grid-auto-rows: max-content;   /* rows must never shrink below card height */
     gap: 12px;
     align-content: start;
   }
@@ -448,9 +450,93 @@
     .pl-info { width: 120px; }
     #pl-speed, #pl-msg { display: none; }
   }
+
+  .grid-more { grid-column: 1/-1; height: 1px; }
+  .mobile-only { display: none; }
+
+  /* ── Mobile layout (phones / Android app) ────────────────── */
+  @media (max-width: 760px) {
+    body {
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: var(--bg2);
+    }
+    .mobile-only { display: revert; }
+
+    header { padding: 0 12px; height: 54px; gap: 10px; }
+    .logo > div:last-child { display: none; }
+    .logo-icon { width: 32px; height: 32px; }
+    .search-wrap { max-width: none; }
+    #global-search { font-size: 16px; padding: 8px 12px 8px 34px; } /* 16px stops iOS zoom-on-focus */
+    #result-count { display: none; }
+
+    .layout { display: block; position: relative; background: var(--bg); }
+    .artist-panel, .albums-panel, .detail-panel {
+      position: absolute; inset: 0; border: 0; visibility: hidden; /* not display:none — keeps scroll position */
+    }
+    body.view-artists .artist-panel,
+    body.view-albums  .albums-panel,
+    body.view-detail  .detail-panel { visibility: visible; }
+
+    #artist-search { font-size: 16px; padding: 9px 12px; }
+    .artist-item { padding: 12px 16px; font-size: 15px; border-bottom: 1px solid rgba(46,42,106,.5); }
+    .artist-item .artist-count { font-size: 11px; padding: 2px 8px; }
+
+    .albums-toolbar { padding: 8px 12px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .albums-toolbar::-webkit-scrollbar { display: none; }
+    .type-btn { padding: 6px 14px; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+    .albums-heading { font-size: 12px; color: var(--fg2); padding: 8px 14px 0; font-family: 'Padauk', 'Inter', sans-serif;
+                      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+    #albums-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; padding: 10px 12px 16px; }
+    .album-card { padding: 9px; border-width: 1.5px; }
+    .album-card:hover { transform: none; }
+    .album-title { font-size: 13px; }
+    .album-artist { font-size: 12px; }
+
+    .detail-scroll { padding: 12px 14px 20px; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: transparent; border: 0; color: var(--accent2);
+      font-size: 14px; font-weight: 600; padding: 6px 0 10px; cursor: pointer; font-family: inherit;
+    }
+    .detail-cover, .detail-cover-placeholder { width: 112px; height: 112px; }
+    .detail-title { font-size: 17px; }
+    .detail-artist { font-size: 14px; }
+    .dl-btn { padding: 12px 14px; font-size: 14px; }
+    .track-item { font-size: 14px; padding: 8px; }
+    .mf-track { font-size: 14px; padding: 7px 6px; }
+    .mf-play { width: 34px; height: 34px; font-size: 12px; }
+    .mf-dl { font-size: 16px; padding: 4px; }
+    .play-all { padding: 7px 14px; font-size: 12px; }
+    #track-search { font-size: 16px; }
+
+    /* compact player: [cover][title][⏮ ▶ ⏭] with a seek row underneath */
+    #player { flex-wrap: wrap; padding: 8px 12px 6px; gap: 6px 10px; }
+    .pl-info { flex: 1; width: auto; }
+    .pl-btn { font-size: 18px; padding: 6px 8px; }
+    #pl-toggle { width: 42px; height: 42px; font-size: 15px; }
+    .pl-seek { order: 10; flex-basis: 100%; }
+    #pl-msg { display: block; order: 11; flex-basis: 100%; max-width: none; text-align: center; }
+    #pl-msg:empty { display: none; }
+
+    /* bottom tab bar */
+    #tabbar {
+      display: flex; flex-shrink: 0;
+      background: var(--bg2); border-top: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1; background: transparent; border: 0; color: var(--fg3);
+      padding: 7px 0 8px; font-size: 11px; font-weight: 600; font-family: 'Inter', sans-serif;
+      display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer;
+    }
+    .tab .ico { font-size: 19px; line-height: 1; filter: grayscale(1); opacity: .7; }
+    .tab.active { color: var(--accent2); }
+    .tab.active .ico { filter: none; opacity: 1; }
+    .tab:disabled { opacity: .35; }
+  }
 </style>
 </head>
-<body>
+<body class="view-albums">
 
 <div id="loading">
   <div class="spinner"></div>
@@ -484,6 +570,7 @@
 
   <div class="albums-panel">
     <div class="albums-toolbar" id="type-filters"></div>
+    <div class="albums-heading mobile-only" id="albums-heading"></div>
     <div id="albums-grid"></div>
   </div>
 
@@ -516,6 +603,12 @@
   </select>
   <span id="pl-msg"></span>
 </div>
+
+<nav id="tabbar" class="mobile-only">
+  <button class="tab" data-view="artists"><span class="ico">🎤</span>Artists</button>
+  <button class="tab active" data-view="albums"><span class="ico">💿</span>Albums</button>
+  <button class="tab" data-view="detail" id="tab-detail" disabled><span class="ico">🎧</span>Album</button>
+</nav>
 
 <script>
 const TYPE_STYLES = {
@@ -573,6 +666,7 @@ function renderArtistList(entries, filter) {
         document.getElementById("artist-search").value.toLowerCase()
       );
       buildTypeFilters(); renderAlbums();
+      setView("albums");
     });
   });
 }
@@ -604,12 +698,50 @@ function filteredAlbums() {
   });
 }
 
+/* Album grid renders in pages of PAGE cards; more are appended as the
+   user scrolls near the bottom (rendering all 6,800 at once is slow on phones). */
+const PAGE = 60;
+let gridList = [], gridShown = 0;
+const moreObserver = new IntersectionObserver(entries => {
+  if (entries.some(e => e.isIntersecting)) appendAlbums();
+}, { root: document.getElementById("albums-grid"), rootMargin: "600px" });
+
 function renderAlbums() {
-  const list = filteredAlbums();
+  gridList = filteredAlbums();
+  gridShown = 0;
   const grid = document.getElementById("albums-grid");
-  document.getElementById("result-count").textContent = `${list.length} album${list.length!==1?"s":""}`;
-  if (!list.length) { grid.innerHTML = `<div class="empty-state">No albums match your search.</div>`; return; }
-  grid.innerHTML = list.map(a => {
+  const countText = `${gridList.length} album${gridList.length!==1?"s":""}`;
+  document.getElementById("result-count").textContent = countText;
+  document.getElementById("albums-heading").textContent =
+    (globalQ ? `🔍 “${globalQ}” · ` : selArtist !== "All" ? `${selArtist} · ` : "") + countText;
+  grid.scrollTop = 0;
+  if (!gridList.length) { grid.innerHTML = `<div class="empty-state">No albums match your search.</div>`; return; }
+  grid.innerHTML = `<div class="grid-more"></div>`;
+  appendAlbums();
+}
+
+function appendAlbums() {
+  if (gridShown >= gridList.length) return;
+  const grid = document.getElementById("albums-grid");
+  const sentinel = grid.querySelector(".grid-more");
+  const chunk = gridList.slice(gridShown, gridShown + PAGE);
+  gridShown += chunk.length;
+  sentinel.insertAdjacentHTML("beforebegin", chunk.map(albumCardHtml).join(""));
+  moreObserver.disconnect();
+  if (gridShown < gridList.length) moreObserver.observe(sentinel);
+}
+
+document.getElementById("albums-grid").addEventListener("click", e => {
+  const card = e.target.closest(".album-card");
+  if (!card) return;
+  selAlbum = allAlbums.find(a => a.id === parseInt(card.dataset.id)) || null;
+  document.querySelectorAll(".album-card.active").forEach(c => c.classList.remove("active"));
+  card.classList.add("active");
+  renderDetail();
+  setView("detail");
+});
+
+function albumCardHtml(a) {
     const s = TYPE_STYLES[a.type] || DEFAULT_STYLE;
     const coverEl = a.coverUrl
       ? `<img class="album-cover" src="${escHtml(a.coverUrl)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="album-cover-placeholder" style="display:none">🎵</div>`
@@ -622,14 +754,35 @@ function renderAlbums() {
       <div class="album-artist">${escHtml(a.artist||"")}</div>
       ${a.year ? `<div class="album-year">${escHtml(a.year)}</div>` : ""}
     </div>`;
-  }).join("");
-  grid.querySelectorAll(".album-card").forEach(card => {
-    card.addEventListener("click", () => {
-      selAlbum = allAlbums.find(a => a.id === parseInt(card.dataset.id)) || null;
-      renderAlbums(); renderDetail();
-    });
-  });
 }
+
+/* ── Mobile views: one panel at a time + bottom tabs ──────────────
+   Each view change pushes a history entry, so the Android back button
+   (and browser back) returns to the previous panel.                 */
+const isMobile = () => matchMedia("(max-width: 760px)").matches;
+let curView = "albums";
+
+function setView(v, push = true) {
+  if (v === "detail" && !selAlbum) v = "albums";
+  document.body.classList.remove("view-" + curView);
+  document.body.classList.add("view-" + v);
+  document.querySelectorAll("#tabbar .tab").forEach(t => t.classList.toggle("active", t.dataset.view === v));
+  document.getElementById("tab-detail").disabled = !selAlbum;
+  if (push && isMobile() && v !== curView) history.pushState({ view: v }, "");
+  curView = v;
+}
+history.replaceState({ view: "albums" }, "");
+window.addEventListener("popstate", e => setView(e.state?.view || "albums", false));
+
+// Android app (Capacitor): hardware Back goes to the previous panel; on the
+// first panel it sends the app to the background instead of closing it,
+// so music keeps playing. (No-op on the website.)
+const CapApp = window.Capacitor?.Plugins?.App;
+if (CapApp) CapApp.addListener("backButton", () => {
+  if (curView !== "albums" || history.state?.view !== "albums") history.back();
+  else CapApp.minimizeApp();
+});
+document.querySelectorAll("#tabbar .tab").forEach(t => t.addEventListener("click", () => setView(t.dataset.view)));
 
 function renderDetail() {
   const panel = document.getElementById("detail-panel");
@@ -638,6 +791,7 @@ function renderDetail() {
   const s = TYPE_STYLES[a.type] || DEFAULT_STYLE;
   const coverEl = a.coverUrl ? `<img class="detail-cover" src="${escHtml(a.coverUrl)}" alt="" onerror="this.style.display='none'">` : `<div class="detail-cover-placeholder">🎵</div>`;
   panel.innerHTML = `<div class="detail-scroll">
+    <button class="back-btn mobile-only" onclick="history.state?.view === 'detail' ? history.back() : setView('albums')">‹ Back to albums</button>
     <div class="detail-header">
       ${coverEl}
       <div class="detail-meta">
@@ -887,6 +1041,30 @@ if ("mediaSession" in navigator) {
   navigator.mediaSession.setActionHandler("nexttrack",     () => playIdx(player.idx + 1));
 }
 
+/* ── Android app: background playback service + media notification ──
+   window.Capacitor.Plugins.BackgroundAudio exists only inside the app
+   (mobile/android/.../BackgroundAudioPlugin.java); on the website it's undefined. */
+const BgAudio = window.Capacitor?.Plugins?.BackgroundAudio;
+let bgStopped = false;
+function bgUpdate(playing) {
+  if (!BgAudio || player.idx < 0) return;
+  if (playing) bgStopped = false;
+  else if (bgStopped) return;          // closed with ✕ — don't bring the notification back on "pause"
+  const t = player.queue[player.idx], a = player.album;
+  BgAudio.update({ title: t.name, artist: `${a.artist || ""} — ${a.title || ""}`, playing }).catch(() => {});
+}
+if (BgAudio) {
+  audio.addEventListener("playing", () => bgUpdate(true));
+  audio.addEventListener("pause",   () => bgUpdate(false));
+  BgAudio.addListener("control", ({ action }) => {
+    if (action === "play")  audio.play().catch(() => {});
+    if (action === "pause") audio.pause();
+    if (action === "next")  $p("pl-next").click();
+    if (action === "prev")  $p("pl-prev").click();
+    if (action === "stop")  { bgStopped = true; audio.pause(); BgAudio.stop(); }
+  });
+}
+
 document.addEventListener("keydown", e => {
   if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
   if (e.code === "Space" && player.idx >= 0) { e.preventDefault(); togglePlay(); }
@@ -895,6 +1073,7 @@ document.addEventListener("keydown", e => {
 document.getElementById("global-search").addEventListener("input", function() {
   globalQ = this.value; selArtist = "All"; selType = "All";
   buildArtistList(); buildTypeFilters(); renderAlbums();
+  if (curView !== "albums") setView("albums");
 });
 
 function escHtml(s) {

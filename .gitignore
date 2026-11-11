@@ -3,3 +3,9 @@ __pycache__/
 *.pyo
 albums.xlsx
 templates/index_with_tracks.html
+
+# Android app — kept in a separate PRIVATE repo
+mobile/
+# signing keys must never be committed
+*.jks
+*.keystore
