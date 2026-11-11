@@ -1063,7 +1063,8 @@ function bgUpdate(playing) {
   if (playing) bgStopped = false;
   else if (bgStopped) return;          // closed with ✕ — don't bring the notification back on "pause"
   const t = player.queue[player.idx], a = player.album;
-  BgAudio.update({ title: t.name, artist: `${a.artist || ""} — ${a.title || ""}`, playing }).catch(() => {});
+  BgAudio.update({ title: t.name, artist: `${a.artist || ""} — ${a.title || ""}`, playing,
+                   artUrl: a.coverUrl || "" }).catch(() => {});
 }
 if (BgAudio) {
   audio.addEventListener("playing", () => bgUpdate(true));
