@@ -2,7 +2,7 @@
 
 A browser for **6,800+ classical Burmese music albums** scraped from [phyuniwarpyar.blogspot.com](https://phyuniwarpyar.blogspot.com).
 
-**[▶ Open Live Demo](https://admin-pss.github.io/myanmar-music-library/)**
+**[▶ Open Live Demo](https://admin-pss.github.io/myanmar-music-library/)** · **[📱 Download Android App (APK)](https://github.com/Admin-PSS/myanmar-music-library/releases/latest/download/myanmar-music-library.apk)**
 
 ![screenshot](screenshot.png)
 
@@ -13,6 +13,16 @@ A browser for **6,800+ classical Burmese music albums** scraped from [phyuniwarp
 - Search by artist name, album title, or any song in the tracklist
 - Full tracklist with track-level search
 - pCloud / MediaFire download links and blog post links
+- Listen in the browser (MediaFire streaming player)
+- Mobile-friendly layout
+
+## Android app
+
+Download the latest APK from [Releases](https://github.com/Admin-PSS/myanmar-music-library/releases/latest).
+It keeps playing music in the background and has lock-screen / notification controls.
+
+To install: open the downloaded `.apk` on your phone and allow **"Install unknown apps"** when Android asks.
+Google Play Protect may warn that the app is from an unknown developer — tap **Install anyway**.
 
 ## Run locally
 

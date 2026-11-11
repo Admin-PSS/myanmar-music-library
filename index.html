@@ -91,6 +91,13 @@
     margin-left: auto;
   }
 
+  #apk-link {
+    flex-shrink: 0; text-decoration: none; font-size: 12px; font-weight: 600;
+    color: var(--accent2); border: 1.5px solid var(--border); border-radius: 8px; padding: 6px 10px;
+  }
+  #apk-link:hover { border-color: var(--accent); color: var(--fg); }
+  .in-app #apk-link { display: none; }   /* already inside the Android app */
+
   /* ── Main layout ─────────────────────────────────────────── */
   .layout {
     display: grid;
@@ -469,6 +476,8 @@
     .search-wrap { max-width: none; }
     #global-search { font-size: 16px; padding: 8px 12px 8px 34px; } /* 16px stops iOS zoom-on-focus */
     #result-count { display: none; }
+    #apk-link { padding: 6px 8px; font-size: 16px; }
+    #apk-link .apk-text { display: none; }
 
     .layout { display: block; position: relative; background: var(--bg); }
     .artist-panel, .albums-panel, .detail-panel {
@@ -558,6 +567,8 @@
   </div>
 
   <span id="result-count"></span>
+  <a id="apk-link" href="https://github.com/Admin-PSS/myanmar-music-library/releases/latest/download/myanmar-music-library.apk"
+     title="Download the Android app (APK)">📱<span class="apk-text"> Android App</span></a>
 </header>
 
 <div class="layout">
@@ -777,6 +788,7 @@ window.addEventListener("popstate", e => setView(e.state?.view || "albums", fals
 // Android app (Capacitor): hardware Back goes to the previous panel; on the
 // first panel it sends the app to the background instead of closing it,
 // so music keeps playing. (No-op on the website.)
+if (window.Capacitor?.isNativePlatform?.()) document.body.classList.add("in-app");
 const CapApp = window.Capacitor?.Plugins?.App;
 if (CapApp) CapApp.addListener("backButton", () => {
   if (curView !== "albums" || history.state?.view !== "albums") history.back();
