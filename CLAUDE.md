@@ -13,7 +13,7 @@ A browser and player for **6,800+ classical Burmese music albums** scraped from 
 | Android app (Capacitor) | `mobile/` (separate **private** repo) | `albums.json` bundled in the APK |
 
 - Public repo: `Admin-PSS/myanmar-music-library` (GitHub Pages + APK downloads via Releases)
-- Private repo: `Admin-PSS/myanmar-music-library-android` (the `mobile/` folder)
+- The `mobile/` folder is its own git repo with a private remote (see `git -C mobile remote -v`)
 
 ## Golden rule: `index.html` is the single source of the UI
 
